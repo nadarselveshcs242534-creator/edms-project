@@ -56,9 +56,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 // Serve the compiled React frontend static files
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// Catch-all route to hand off routing to the React frontend
-// FIXED: Express 5 requires '/(.*)' instead of '*'
-app.get('/(.*)', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
