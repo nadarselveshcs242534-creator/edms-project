@@ -7,7 +7,11 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors());
+// Replace your existing cors setup with this:
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://edmsproject.onrender.com'], 
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
