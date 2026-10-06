@@ -34,8 +34,8 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const userRes = await axios.get('https://edms-project.onrender.com/api/admin/users');
-      const classRes = await axios.get('https://edms-project.onrender.com/api/admin/classrooms');
+      const userRes = await axios.get('/api/admin/users');
+      const classRes = await axios.get('/api/admin/classrooms');
       setUsers(userRes.data);
       setClassrooms(classRes.data);
     } catch (error) {
@@ -47,11 +47,11 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       if (editingUserId) {
-        await axios.put(`https://edms-project.onrender.com/api/admin/users/${editingUserId}`, newUser);
+        await axios.put(`/api/admin/users/${editingUserId}`, newUser);
         setMessage('✅ User updated successfully!');
         setEditingUserId(null);
       } else {
-        await axios.post('https://edms-project.onrender.com/api/admin/users', newUser);
+        await axios.post('/api/admin/users', newUser);
         setMessage(`✅ User ${newUser.name} created successfully!`);
       }
       setNewUser({ name: '', email: '', password: '', role: 'Student' });
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Delete this user?')) return;
     try {
-      await axios.delete(`https://edms-project.onrender.com/api/admin/users/${id}`);
+      await axios.delete(`/api/admin/users/${id}`);
       fetchData();
     } catch (error) {
       setMessage('❌ Error deleting user.');
@@ -81,14 +81,14 @@ export default function AdminDashboard() {
         : newClassroom.subjects;
 
       if (editingClassId) {
-        await axios.put(`https://edms-project.onrender.com/api/admin/classrooms/${editingClassId}`, {
+        await axios.put(`/api/admin/classrooms/${editingClassId}`, {
           name: newClassroom.name,
           subjects: subjectsArray
         });
         setMessage('✅ Classroom updated successfully!');
         setEditingClassId(null);
       } else {
-        await axios.post('https://edms-project.onrender.com/api/admin/classrooms', { 
+        await axios.post('/api/admin/classrooms', { 
           name: newClassroom.name, 
           subjects: subjectsArray 
         });
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
   const handleDeleteClassroom = async (id) => {
     if (!window.confirm('Delete this classroom?')) return;
     try {
-      await axios.delete(`https://edms-project.onrender.com/api/admin/classrooms/${id}`);
+      await axios.delete(`/api/admin/classrooms/${id}`);
       fetchData();
     } catch (error) {
       setMessage('❌ Error deleting classroom.');
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
   const handleSaveEnrollment = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`https://edms-project.onrender.com/api/admin/classrooms/${enrollingClass._id}`, {
+      await axios.put(`/api/admin/classrooms/${enrollingClass._id}`, {
         name: enrollingClass.name,
         subjects: enrollingClass.subjects,
         students: selectedStudents
@@ -142,10 +142,9 @@ export default function AdminDashboard() {
   const handleSaveExam = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://edms-project.onrender.com/api/admin/exam-papers', newExam);
+      await axios.post('/api/admin/exam-papers', newExam);
       setMessage(`✅ Exam ${newExam.title} created!`);
       setNewExam({ title: '', classroomId: '', subject: '', maxMarks: 100 });
-      // To see all exams, we'd need to fetch them. For simplicity, we just show success.
       setTimeout(() => setMessage(''), 4000);
     } catch (error) {
       setMessage('❌ Error creating exam.');
@@ -230,7 +229,6 @@ export default function AdminDashboard() {
         
         <div className="responsive-split fade-in">
           
-          {/* LEFT PANEL: Forms */}
           <div className="light-card" style={{ alignSelf: 'start' }}>
             
             {activeTab === 'users' && (
@@ -362,7 +360,6 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* RIGHT PANEL: Directories */}
           <div style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
             <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-main)', paddingLeft: '5px', fontSize: '1.4rem' }}>
               {activeTab === 'users' ? 'Directory' : (activeTab === 'exams' ? 'Exam Guidelines' : 'Active Classrooms')}
