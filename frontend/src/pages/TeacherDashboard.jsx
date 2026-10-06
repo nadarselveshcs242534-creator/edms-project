@@ -47,7 +47,7 @@ export default function TeacherDashboard() {
   useEffect(() => {
     const fetchAllClasses = async () => {
       try {
-        const res = await axios.get('https://edms-project.onrender.com/api/admin/classrooms');
+        const res = await axios.get('/api/admin/classrooms');
         setMySubjects(res.data);
         const total = res.data.reduce((sum, cls) => sum + (cls.students ? cls.students.length : 0), 0);
         setKpiData(prev => ({ ...prev, totalStudents: total }));
@@ -70,7 +70,7 @@ export default function TeacherDashboard() {
   const fetchQuizzes = async () => {
     if (selectedClassId && selectedSubject) {
       try {
-        const res = await axios.get(`https://edms-project.onrender.com/api/admin/quizzes/${selectedClassId}/${selectedSubject}`);
+        const res = await axios.get(`/api/admin/quizzes/${selectedClassId}/${selectedSubject}`);
         setActiveQuizzes(res.data);
       } catch (error) { console.error("Error fetching quizzes:", error); }
     }
@@ -79,7 +79,7 @@ export default function TeacherDashboard() {
   const fetchAssignments = async () => {
     if (selectedClassId && selectedSubject) {
       try {
-        const res = await axios.get(`https://edms-project.onrender.com/api/admin/assignments/${selectedClassId}/${selectedSubject}`);
+        const res = await axios.get(`/api/admin/assignments/${selectedClassId}/${selectedSubject}`);
         setMyAssignments(res.data);
       } catch (error) { console.error("Error fetching assignments:", error); }
     }
@@ -91,7 +91,7 @@ export default function TeacherDashboard() {
       const cls = mySubjects.find(c => c._id === selectedClassId);
       let aggregatedQuizzes = [];
       for (const sub of cls.subjects) {
-        const res = await axios.get(`https://edms-project.onrender.com/api/admin/quizzes/${cls._id}/${sub}`);
+        const res = await axios.get(`/api/admin/quizzes/${cls._id}/${sub}`);
         aggregatedQuizzes = [...aggregatedQuizzes, ...res.data];
       }
       setClassAnalytics(aggregatedQuizzes);
@@ -101,7 +101,7 @@ export default function TeacherDashboard() {
   const fetchExamPapers = async () => {
     if (!selectedClassId) return;
     try {
-      const res = await axios.get(`https://edms-project.onrender.com/api/admin/exam-papers/${selectedClassId}`);
+      const res = await axios.get(`/api/admin/exam-papers/${selectedClassId}`);
       setExamPapers(res.data);
     } catch (err) { console.error("Error fetching exam papers", err); }
   };
@@ -128,7 +128,7 @@ export default function TeacherDashboard() {
   const handleAssignmentSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://edms-project.onrender.com/api/admin/assignments', {
+      await axios.post('/api/admin/assignments', {
         title: assignmentData.title,
         description: assignmentData.description,
         dueDate: assignmentData.dueDate,
@@ -166,7 +166,7 @@ export default function TeacherDashboard() {
     e.preventDefault();
     if (quizData.questions.length === 0) return alert("⚠️ Please add at least one question!");
     try {
-      await axios.post('https://edms-project.onrender.com/api/admin/quizzes', {
+      await axios.post('/api/admin/quizzes', {
         title: quizData.title, classroomId: selectedClassId, subject: selectedSubject, showMarks: quizData.showMarks, questions: quizData.questions
       });
       alert(`✅ Quiz "${quizData.title}" launched successfully!`);
@@ -543,7 +543,7 @@ export default function TeacherDashboard() {
                             <button 
                               onClick={async () => {
                                 try {
-                                  await axios.put(`https://edms-project.onrender.com/api/admin/exam-papers/${exam._id}/publish`);
+                                  await axios.put(`/api/admin/exam-papers/${exam._id}/publish`);
                                   fetchExamPapers();
                                   alert(exam.isPublished ? "Results Unpublished" : "Results Published for Students");
                                 } catch (error) { alert("Error"); }
@@ -562,7 +562,7 @@ export default function TeacherDashboard() {
                               const input = e.target.elements[`score_${s.studentId._id}`];
                               return { studentId: s.studentId._id, marks: input && input.value !== '' ? Number(input.value) : null };
                             });
-                            await axios.put(`https://edms-project.onrender.com/api/admin/exam-papers/${exam._id}/scores`, { scores: updatedScores });
+                            await axios.put(`/api/admin/exam-papers/${exam._id}/scores`, { scores: updatedScores });
                             alert("Scores Saved!");
                             fetchExamPapers();
                           } catch (err) { alert("Error saving scores"); }
@@ -664,7 +664,7 @@ export default function TeacherDashboard() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
                               <span style={{ color: 'var(--teacher-purple)', fontSize: '0.9rem', fontWeight: 'bold', background: '#f3e8ff', padding: '8px 16px', borderRadius: '20px' }}>{quiz.submissions?.length || 0} Submitted</span>
                               <button onClick={async () => {
-                                try { await axios.put(`https://edms-project.onrender.com/api/admin/quizzes/${quiz._id}/publish`); fetchQuizzes(); } catch(e){}
+                                try { await axios.put(`/api/admin/quizzes/${quiz._id}/publish`); fetchQuizzes(); } catch(e){}
                               }} className={quiz.showMarks ? "btn-cancel" : "btn-primary"} style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
                                 {quiz.showMarks ? 'Hide Marks' : 'Publish Marks'}
                               </button>
