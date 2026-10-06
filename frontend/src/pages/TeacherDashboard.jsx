@@ -47,7 +47,7 @@ export default function TeacherDashboard() {
   useEffect(() => {
     const fetchAllClasses = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/admin/classrooms');
+        const res = await axios.get('https://edms-project.onrender.com/api/admin/classrooms');
         setMySubjects(res.data);
         const total = res.data.reduce((sum, cls) => sum + (cls.students ? cls.students.length : 0), 0);
         setKpiData(prev => ({ ...prev, totalStudents: total }));
@@ -70,7 +70,7 @@ export default function TeacherDashboard() {
   const fetchQuizzes = async () => {
     if (selectedClassId && selectedSubject) {
       try {
-        const res = await axios.get(`http://localhost:5000/api/admin/quizzes/${selectedClassId}/${selectedSubject}`);
+        const res = await axios.get(`https://edms-project.onrender.com/api/admin/quizzes/${selectedClassId}/${selectedSubject}`);
         setActiveQuizzes(res.data);
       } catch (error) { console.error("Error fetching quizzes:", error); }
     }
@@ -79,7 +79,7 @@ export default function TeacherDashboard() {
   const fetchAssignments = async () => {
     if (selectedClassId && selectedSubject) {
       try {
-        const res = await axios.get(`http://localhost:5000/api/admin/assignments/${selectedClassId}/${selectedSubject}`);
+        const res = await axios.get(`https://edms-project.onrender.com/api/admin/assignments/${selectedClassId}/${selectedSubject}`);
         setMyAssignments(res.data);
       } catch (error) { console.error("Error fetching assignments:", error); }
     }
@@ -91,7 +91,7 @@ export default function TeacherDashboard() {
       const cls = mySubjects.find(c => c._id === selectedClassId);
       let aggregatedQuizzes = [];
       for (const sub of cls.subjects) {
-        const res = await axios.get(`http://localhost:5000/api/admin/quizzes/${cls._id}/${sub}`);
+        const res = await axios.get(`https://edms-project.onrender.com/api/admin/quizzes/${cls._id}/${sub}`);
         aggregatedQuizzes = [...aggregatedQuizzes, ...res.data];
       }
       setClassAnalytics(aggregatedQuizzes);
@@ -101,7 +101,7 @@ export default function TeacherDashboard() {
   const fetchExamPapers = async () => {
     if (!selectedClassId) return;
     try {
-      const res = await axios.get(`http://localhost:5000/api/admin/exam-papers/${selectedClassId}`);
+      const res = await axios.get(`https://edms-project.onrender.com/api/admin/exam-papers/${selectedClassId}`);
       setExamPapers(res.data);
     } catch (err) { console.error("Error fetching exam papers", err); }
   };
@@ -128,7 +128,7 @@ export default function TeacherDashboard() {
   const handleAssignmentSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/admin/assignments', {
+      await axios.post('https://edms-project.onrender.com/api/admin/assignments', {
         title: assignmentData.title,
         description: assignmentData.description,
         dueDate: assignmentData.dueDate,
@@ -166,7 +166,7 @@ export default function TeacherDashboard() {
     e.preventDefault();
     if (quizData.questions.length === 0) return alert("⚠️ Please add at least one question!");
     try {
-      await axios.post('http://localhost:5000/api/admin/quizzes', {
+      await axios.post('https://edms-project.onrender.com/api/admin/quizzes', {
         title: quizData.title, classroomId: selectedClassId, subject: selectedSubject, showMarks: quizData.showMarks, questions: quizData.questions
       });
       alert(`✅ Quiz "${quizData.title}" launched successfully!`);
@@ -520,6 +520,93 @@ export default function TeacherDashboard() {
           </div>
         )}
 
+        {activeSidebarTab === 'evaluate_exams' && (
+          <div className="fade-in">
+            {renderClassSubjectSelectors(false)}
+            
+            {selectedClassId && (
+              <div className="light-card fade-in">
+                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-main)' }}>Evaluate Exam Papers</h3>
+                
+                {examPapers.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)' }}>No exam papers found for this class.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {examPapers.map(exam => (
+                      <div key={exam._id} style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', color: 'var(--text-main)' }}>{exam.title}</h4>
+                            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Subject: {exam.subject} | Max Marks: {exam.maxMarks}</p>
+                          </div>
+                          <div>
+                            <button 
+                              onClick={async () => {
+                                try {
+                                  await axios.put(`https://edms-project.onrender.com/api/admin/exam-papers/${exam._id}/publish`);
+                                  fetchExamPapers();
+                                  alert(exam.isPublished ? "Results Unpublished" : "Results Published for Students");
+                                } catch (error) { alert("Error"); }
+                              }}
+                              style={{ padding: '8px 16px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: exam.isPublished ? '#fff1f2' : '#f0fdfa', color: exam.isPublished ? 'var(--danger)' : '#0d9488' }}
+                            >
+                              {exam.isPublished ? "Unpublish Results" : "Publish Results"}
+                            </button>
+                          </div>
+                        </div>
+
+                        <form onSubmit={async (e) => {
+                          e.preventDefault();
+                          try {
+                            const updatedScores = exam.scores.map(s => {
+                              const input = e.target.elements[`score_${s.studentId._id}`];
+                              return { studentId: s.studentId._id, marks: input && input.value !== '' ? Number(input.value) : null };
+                            });
+                            await axios.put(`https://edms-project.onrender.com/api/admin/exam-papers/${exam._id}/scores`, { scores: updatedScores });
+                            alert("Scores Saved!");
+                            fetchExamPapers();
+                          } catch (err) { alert("Error saving scores"); }
+                        }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                              <tr style={{ background: '#f8fafc', borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
+                                <th style={{ padding: '12px' }}>Student Name</th>
+                                <th style={{ padding: '12px' }}>Marks Scored</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {exam.scores.map(score => (
+                                <tr key={score.studentId._id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                  <td style={{ padding: '12px', fontWeight: '500' }}>{score.studentId.name}</td>
+                                  <td style={{ padding: '12px' }}>
+                                    <input 
+                                      type="number" 
+                                      name={`score_${score.studentId._id}`}
+                                      defaultValue={score.marks !== null ? score.marks : ''} 
+                                      max={exam.maxMarks} 
+                                      min={0}
+                                      style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', width: '100px' }}
+                                    />
+                                    <span style={{ marginLeft: '10px', color: 'var(--text-muted)' }}>/ {exam.maxMarks}</span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          
+                          <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                            <button type="submit" className="btn-primary" style={{ background: 'var(--teacher-purple)' }}>Save Scores</button>
+                          </div>
+                        </form>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeSidebarTab === 'make_exams' && (
           <div className="light-card fade-in">
             <h2 style={{ margin: '0 0 20px 0', color: 'var(--teacher-purple)', fontSize: '1.8rem' }}>✍️ Build & Publish Exams</h2>
@@ -577,7 +664,7 @@ export default function TeacherDashboard() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
                               <span style={{ color: 'var(--teacher-purple)', fontSize: '0.9rem', fontWeight: 'bold', background: '#f3e8ff', padding: '8px 16px', borderRadius: '20px' }}>{quiz.submissions?.length || 0} Submitted</span>
                               <button onClick={async () => {
-                                try { await axios.put(`http://localhost:5000/api/admin/quizzes/${quiz._id}/publish`); fetchQuizzes(); } catch(e){}
+                                try { await axios.put(`https://edms-project.onrender.com/api/admin/quizzes/${quiz._id}/publish`); fetchQuizzes(); } catch(e){}
                               }} className={quiz.showMarks ? "btn-cancel" : "btn-primary"} style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
                                 {quiz.showMarks ? 'Hide Marks' : 'Publish Marks'}
                               </button>
@@ -593,93 +680,6 @@ export default function TeacherDashboard() {
         )}
 
         {/* --- DYNAMIC MULTI-CHART VISUALIZATION --- */}
-        {activeSidebarTab === 'evaluate_exams' && (
-          <div className="fade-in">
-            {renderClassSubjectSelectors(false)}
-            
-            {selectedClassId && (
-              <div className="light-card fade-in">
-                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-main)' }}>Evaluate Exam Papers</h3>
-                
-                {examPapers.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)' }}>No exam papers found for this class.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {examPapers.map(exam => (
-                      <div key={exam._id} style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                          <div>
-                            <h4 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', color: 'var(--text-main)' }}>{exam.title}</h4>
-                            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Subject: {exam.subject} | Max Marks: {exam.maxMarks}</p>
-                          </div>
-                          <div>
-                            <button 
-                              onClick={async () => {
-                                try {
-                                  await axios.put(`http://localhost:5000/api/admin/exam-papers/${exam._id}/publish`);
-                                  fetchExamPapers();
-                                  alert(exam.isPublished ? "Results Unpublished" : "Results Published for Students");
-                                } catch (error) { alert("Error"); }
-                              }}
-                              style={{ padding: '8px 16px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: exam.isPublished ? '#fff1f2' : '#f0fdfa', color: exam.isPublished ? 'var(--danger)' : '#0d9488' }}
-                            >
-                              {exam.isPublished ? "Unpublish Results" : "Publish Results"}
-                            </button>
-                          </div>
-                        </div>
-
-                        <form onSubmit={async (e) => {
-                          e.preventDefault();
-                          try {
-                            const updatedScores = exam.scores.map(s => {
-                              const input = e.target.elements[`score_${s.studentId._id}`];
-                              return { studentId: s.studentId._id, marks: input && input.value !== '' ? Number(input.value) : null };
-                            });
-                            await axios.put(`http://localhost:5000/api/admin/exam-papers/${exam._id}/scores`, { scores: updatedScores });
-                            alert("Scores Saved!");
-                            fetchExamPapers();
-                          } catch (err) { alert("Error saving scores"); }
-                        }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                              <tr style={{ background: '#f8fafc', borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
-                                <th style={{ padding: '12px' }}>Student Name</th>
-                                <th style={{ padding: '12px' }}>Marks Scored</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {exam.scores.map(score => (
-                                <tr key={score.studentId._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                  <td style={{ padding: '12px', fontWeight: '500' }}>{score.studentId.name}</td>
-                                  <td style={{ padding: '12px' }}>
-                                    <input 
-                                      type="number" 
-                                      name={`score_${score.studentId._id}`}
-                                      defaultValue={score.marks !== null ? score.marks : ''} 
-                                      max={exam.maxMarks} 
-                                      min={0}
-                                      style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', width: '100px' }}
-                                    />
-                                    <span style={{ marginLeft: '10px', color: 'var(--text-muted)' }}>/ {exam.maxMarks}</span>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                          
-                          <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                            <button type="submit" className="btn-primary" style={{ background: 'var(--teacher-purple)' }}>Save Scores</button>
-                          </div>
-                        </form>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
         {activeSidebarTab === 'analytics' && (
           <div className="fade-in">
             <h2 style={{ margin: '0 0 20px 0', color: 'var(--teacher-purple)', fontSize: '1.8rem' }}>📈 Class Analytics</h2>
