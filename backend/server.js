@@ -2,16 +2,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const path = require('path');
 const User = require('./models/User'); 
 require('dotenv').config();
 
 const app = express();
 
-// Replace your existing cors setup with this:
-app.use(cors({
-    origin: ['http://localhost:5173', 'https://edmsproject.onrender.com'], 
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
@@ -49,17 +46,22 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// Include your admin routes
+// Include your API routes
 app.use('/api/admin', require('./routes/adminRoutes'));
-
-// Add this line to enable the login endpoint
 app.use('/api/auth', require('./routes/authRoutes'));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the Ed-Management API' });
+// ==========================================
+// 🚀 UNIFIED DEPLOYMENT LOGIC
+// ==========================================
+// Serve the compiled React frontend static files
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Catch-all route to hand off routing to the React frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running in development mode on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
