@@ -1,0 +1,290 @@
+/* --- 1. FULL SCREEN RESET (Kills Vite Defaults) --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100vw;
+  min-height: 100vh;
+  /* Animated gradient background for Liquid Glass effect */
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, sans-serif;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  display: block; /* Kills Vite's default flex centering */
+}
+
+/* --- 2. GLOBAL THEME VARIABLES --- */
+:root {
+  --admin-teal: #0d9488;
+  --teacher-purple: #8b5cf6;
+  --student-orange: #f97316;
+  --text-main: #ffffff;
+  --text-muted: #e2e8f0;
+  --border: rgba(255, 255, 255, 0.3);
+  --bg-glass: rgba(255, 255, 255, 0.15);
+  --shadow-sm: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-hover: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Override recharts default text color */
+.recharts-text {
+  fill: #fff !important;
+}
+
+/* --- 3. LAYOUT STRUCTURE --- */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.top-nav {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.top-nav h2 {
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  align-items: center;
+}
+
+.nav-links::-webkit-scrollbar {
+  display: none;
+}
+
+.top-nav button {
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #fff;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+
+.top-nav button.active, .top-nav button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.main-content h1, .main-content h2, .main-content h3 {
+  text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* --- 4. ANIMATIONS --- */
+.fade-in {
+  animation: fadeInGlass 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes fadeInGlass {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Staggered list animations */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+
+/* --- 5. CARDS & HOVER EFFECTS (Liquid Glass) --- */
+.light-card, .interactive-card, .glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+.light-card::before, .interactive-card::before, .glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  animation: shine 6s infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.interactive-card:hover, .glass-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* --- 6. FORMS & INPUTS --- */
+.animated-input {
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.animated-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.animated-input:focus {
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* --- 7. BUTTONS --- */
+.btn-primary {
+  padding: 12px 24px;
+  color: white;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 100%);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.6);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-cancel {
+  padding: 12px 24px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.8);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.btn-cancel:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* --- 8. RESPONSIVE GRIDS --- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.responsive-split {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 40px;
+}
+
+@media (max-width: 1024px) {
+  .responsive-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+  .top-nav {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .main-content {
+    padding: 20px;
+  }
+}
