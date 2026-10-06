@@ -45,7 +45,7 @@ export default function StudentDashboard() {
     const fetchEnrolledClasses = async () => {
       try {
         const studentId = getUserIdFromToken();
-        const res = await axios.get('http://localhost:5000/api/admin/classrooms');
+        const res = await axios.get('https://edms-project.onrender.com/api/admin/classrooms');
         if (studentId) {
           const enrolled = res.data.filter(cls => 
             cls.students && cls.students.some(student => (student._id || student).toString() === studentId.toString())
@@ -60,10 +60,10 @@ export default function StudentDashboard() {
   const fetchQuizzes = async () => {
     if (selectedClassId && selectedSubject) {
       try {
-        const res = await axios.get(`http://localhost:5000/api/admin/quizzes/${selectedClassId}/${selectedSubject}`);
+        const res = await axios.get(`https://edms-project.onrender.com/api/admin/quizzes/${selectedClassId}/${selectedSubject}`);
         setAvailableQuizzes(res.data);
 
-        const examRes = await axios.get(`http://localhost:5000/api/admin/exam-papers/${selectedClassId}`);
+        const examRes = await axios.get(`https://edms-project.onrender.com/api/admin/exam-papers/${selectedClassId}`);
         const filteredExams = examRes.data.filter(e => e.subject === selectedSubject && e.isPublished);
         setPublishedExamPapers(filteredExams);
       } catch (err) { console.error("Error fetching quizzes or exams", err); }
@@ -76,7 +76,7 @@ export default function StudentDashboard() {
       let aggregatedQuizzes = [];
       for (const cls of mySubjects) {
         for (const sub of cls.subjects) {
-          const res = await axios.get(`http://localhost:5000/api/admin/quizzes/${cls._id}/${sub}`);
+          const res = await axios.get(`https://edms-project.onrender.com/api/admin/quizzes/${cls._id}/${sub}`);
           aggregatedQuizzes = [...aggregatedQuizzes, ...res.data];
         }
       }
@@ -107,7 +107,7 @@ export default function StudentDashboard() {
   const handleSubmitQuiz = async () => {
     try {
       const studentId = getUserIdFromToken();
-      await axios.post(`http://localhost:5000/api/admin/quizzes/${activeQuiz._id}/submit`, { studentId, answers: quizAnswers });
+      await axios.post(`https://edms-project.onrender.com/api/admin/quizzes/${activeQuiz._id}/submit`, { studentId, answers: quizAnswers });
       alert("✅ Exam submitted successfully!");
       setActiveQuiz(null);
       setQuizAnswers({});
